@@ -1,0 +1,146 @@
+﻿--Jamison Wilkes
+--Assignment # 10
+
+
+--#1. Insert a new instructor: Mr. Hugo Reyes with an ID of 815. His address is 2342 Oceanic Way, Bayonne, NJ, 07002. 
+--He doesn't have a phone number . Note you do not need to add the city and state since that already exists in the Zipcode table
+INSERT INTO instructor
+    (instructor_id, salutation, first_name, last_name, street_address, zip, phone, created_by, created_date, modified_by, modified_date)
+VALUES 
+    ('815', 'Mr', 'Hugo', 'Reyes', '2342 Oceanic Way', '07002', 'null', USER, SYSDATE, USER, SYSDATE);
+
+
+--# 2. Create a new section ID of 48 for Mr. Reyes. He'll be teaching section 4 of the Project Management Course (142) 
+--beginning on September 22, 2011 at 8:15am in Room L211. The capacity is 15 students.
+INSERT INTO section
+    (section_id, course_no, section_no, start_date_time, location, instructor_id, capacity, created_by, created_date, modified_by, modified_date)
+VALUES
+    ('48', '142', '4', TO_DATE('22-Sep-2011 8:15AM', 'DD-MON-YYYY HH:MIAM'), 'L211','815', '15', USER, SYSDATE, USER, SYSDATE);
+    
+--#3. Enroll students 375, 137, 266 and 382 in the section of the course you just created. Their enrollment date should be the
+--current date. (Use ONE INSERT statement)
+INSERT ALL 
+INTO enrollment
+    (student_id, section_id, enroll_date, created_by, created_date, modified_by, modified_date)
+VALUES
+    ('375', '48', SYSDATE, USER, SYSDATE, USER, SYSDATE)
+INTO enrollment
+    (student_id, section_id, enroll_date, created_by, created_date, modified_by, modified_date)
+VALUES
+    ('137', '48', SYSDATE, USER, SYSDATE, USER, SYSDATE)
+INTO enrollment
+    (student_id, section_id, enroll_date, created_by, created_date, modified_by, modified_date)
+VALUES
+    ('266', '48', SYSDATE, USER, SYSDATE, USER, SYSDATE)
+INTO enrollment
+    (student_id, section_id, enroll_date, created_by, created_date, modified_by, modified_date)
+VALUES
+    ('382', '48', SYSDATE, USER, SYSDATE, USER, SYSDATE)
+SELECT * FROM dual;
+
+
+--#4. Remove the enrollment for student 147 from section 120.
+--Note the error. You cannot delete the enrollment record because there are foreign keys in the Grade table that depend on 
+--the Enrollment table records, thus creating an integrity constraint violation.
+--First remove all grades for student 147, section 120 and then remove the enrollment for student 147, section 120.  
+--(Use two DELETE statements)
+DELETE FROM grade
+WHERE student_id = '147' AND section_id = '120';
+DELETE FROM enrollment
+WHERE student_id = '147' AND section_id = '120';
+
+
+--#5. Use the same procedure to remove the enrollment record for student 180 in section 119.
+DELETE FROM grade
+WHERE student_id = '180' AND section_id = '119';
+DELETE FROM enrollment
+WHERE student_id = '180' AND section_id = '119';
+
+
+--#6. Change Mr. Reyes’ (ID 815) phone number to be 4815162342.
+UPDATE instructor
+SET phone = '4815162342'
+WHERE instructor_id = '815';
+
+
+--#7 7. Change the grade to 100 on the first homework (HM) assignment for each student in section 119.
+UPDATE grade
+SET numeric_grade = '100'
+WHERE grade_type_code = 'HM'
+AND grade_code_occurrence = '1'
+AND section_id = '119';
+
+
+--#8 Increase the final exam (FI) score for each student in section 119 by 10 percent.
+UPDATE grade
+SET numeric_grade = 1.1 * numeric_grade
+WHERE grade_type_code = 'FI'
+AND section_id = '119';
+
+
+--# 9. For each section of the Project Management course, list the section ID, location and number of students enrolled. 
+--Sort by section ID
+SELECT sec.section_id, sec.location, COUNT(*)
+FROM section sec LEFT OUTER JOIN enrollment e ON sec.section_id = e.section_id
+WHERE sec.course_no IN 
+    (SELECT course_no FROM course WHERE description = 'Project Management')
+GROUP BY sec.section_id, sec.location
+ORDER BY sec.section_id;
+
+
+--# 10. Provide an alphabetic list of instructor names and phone numbers for instructors that teach the Project Management course.
+SELECT i.first_name, i.last_name, i.phone 
+FROM instructor i
+INNER JOIN section s ON i.instructor_id = s.instructor_id
+INNER JOIN course c ON s.course_no = c.course_no
+WHERE c.description = 'Project Management'
+ORDER BY i.last_name;
+
+
+--#11. Provide a list of students in section 119 along with their average numeric grade. Include the student id, student name 
+--and average grade. Format the average to two places.  Sort by student ID.
+SELECT s.student_id, s.first_name, s.last_name, ROUND(AVG(g.numeric_grade),2)
+FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id 
+INNER JOIN grade g ON e.student_id = g.student_id AND e.section_id = g.section_id
+WHERE e.section_id = '119'
+GROUP BY s.student_id, s.first_name, s.last_name
+ORDER BY s.student_id;
+
+
+--#12. Create a query to determine the number of instructors who have taught more than 3 students in a course section taught in Room L211.
+SELECT COUNT(*) numberOfInstructors
+FROM (SELECT instructor_id FROM section s INNER JOIN enrollment e ON s.section_id = e.section_id WHERE s.location = 'L211' 
+    GROUP BY instructor_id HAVING COUNT(e.student_id) >= 3);
+
+
+--#13. Create a list of instructors that have taught only the Project Management course (142). List the instructor's name 
+--(salutation, first name, last name) and their phone number.
+SELECT salutation || first_name || last_name AS Instructor, phone
+FROM instructor
+WHERE instructor_id IN 
+    (SELECT s.instructor_id
+    FROM section s
+    INNER JOIN course c
+    ON s.course_no = c.course_no
+    WHERE c.description LIKE '%Project Management%'
+    MINUS
+    SELECT s.instructor_id
+    FROM section s
+    INNER JOIN course c
+    ON s.course_no = c.course_no
+    WHERE c.description NOT LIKE '%Project Management%' );
+ 
+ --#14. List student names, section id and course number for students that have not yet received any grades in the course section 48.   
+SELECT s.first_name, s.last_name, sec.section_id, sec.course_no
+FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+INNER JOIN section sec ON e.section_id = sec.section_id
+WHERE sec.section_id = '48'
+ORDER BY s.first_name;
+
+
+--#15. Create a query that will list each unique section start time along with the number of unique courses (not sections)
+--that have been taught at that time.  Sort by start time.
+SELECT  TO_CHAR(start_date_time, 'HH:MI') AS "Start Time", COUNT(course_no)
+FROM section
+GROUP BY start_date_time
+ORDER BY start_date_time;

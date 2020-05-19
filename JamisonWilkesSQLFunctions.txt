@@ -1,0 +1,86 @@
+﻿--Jamison Wilkes
+--Functions Assignment
+
+
+--#1 Provide an alphabetical list of the full name,  phone number, city, and state of all students that work for 'New York Culture'
+--(the full name should be displayed as one column with an alias of 'Student Name'). Arrange the list by last name
+SELECT CONCAT(s.first_name, s.last_name) "Student Name", s.phone, z.city, z.state   
+FROM student s INNER JOIN zipcode z ON(s.zip = z.zip)
+WHERE s.employer = 'New York Culture' 
+ORDER BY "Student Name";
+
+
+--#2  Provide a list of student employers that are corporations (have "Co." in their name).
+--List each employer only once and arrange the list alphabetical order.
+SELECT DISTINCT employer
+FROM student
+WHERE employer LIKE '%Co.%'
+ORDER BY employer;
+
+
+
+
+--#3 Provide an alphabetical list of students in area code 203. List student name in the format <last name (all upper case)>, 
+--<first initial>. ( Example, SMITH, J. ) followed by the phone number. 
+--Pad to the left of the phone number with asterisks making phone be 15 total characters. Order the list by the student name
+SELECT UPPER(last_name) ||' '|| UPPER(SUBSTR(first_name, INSTR(first_name, '.')-1)) ||' ***'|| phone
+FROM student
+WHERE SUBSTR(phone, 1, 3) = '203'
+ORDER BY last_name;
+
+
+--#4 List the name and address of all instructors without a zip code
+SELECT first_name ||' '|| last_name AS "Instructor", street_address
+FROM instructor
+WHERE zip IS NULL;
+--#5 Provide a list of zip codes for Jersey City , NJ. .  Sort on zip.
+SELECT zip
+FROM zipcode
+WHERE city LIKE '%Jersey City%'
+ORDER BY zip;
+--#6 List the course number, description and location for all courses taught in a classroom that ends in the number 11. 
+--Arrange the list on location. USE SUBSTR NOT LIKE!
+SELECT c.course_no, c.description, s.location
+FROM course c INNER JOIN section s ON(c.course_no = s.course_no)
+WHERE SUBSTR(location, -2) = '11'
+ORDER BY location;
+
+
+--#7 Provide a list containing full state name, state abbreviation and city from the zip code table for FL, MI, PR and WV.  . 
+--(You'll need to use the CASE expression).
+--FL is Florida, MI is Michigan, PR is Puerto Rico and WV is West Virginia.  Sort by state.
+
+
+SELECT DISTINCT 
+        DECODE(state, 'FL', 'Florida', 'MI', 'Michigan', 'PR', 'Puerto Rico', 'WV', 'West Virginia')
+    "Full State Name",
+    state, city
+FROM zipcode
+WHERE state IN('FL', 'MI', 'PR', 'WV')
+ORDER BY state;
+
+
+--#8 Create a listing containing single column address (salutation, first name, last name, address, city, state and zip) as 
+--'Instructor Address' for each instructor in zip code 10015. Sort the list in alphabetical order.
+SELECT i.salutation||' '||i.first_name||' '||i.last_name||' '||i.street_address||' '||z.city||' '||z.state||' '||z.zip AS "Instructor Address"
+FROM instructor i INNER JOIN zipcode z ON(i.zip = z.zip)
+WHERE i.zip = '10015'
+ORDER BY i.last_name;
+--#9 List the student first name, last name, student id and quiz score for each student in section 119. List the scores
+--from highest to lowest.
+SELECT DISTINCT s.first_name, s.last_name, s.student_id, g.numeric_grade
+FROM student s INNER JOIN enrollment e ON(s.student_id = e.student_id)
+INNER JOIN grade g ON(e.student_id = g.student_id) AND (e.section_id = g.section_id)
+WHERE e.section_id = '119'
+ORDER BY g.numeric_grade DESC;
+--#10 List the  student first name, last name, student ID, final exam (FI) score and exam result ('PASS' or 'FAIL') 
+--for all students in section 87. A final score of 85 or higher is required to pass . Arrange the list by student last 
+--name then first name.
+SELECT s.first_name, s.last_name, s.student_id, e.section_id, g.numeric_grade, 
+CASE WHEN g.numeric_grade >= '85' THEN 'Pass'
+WHEN g.numeric_grade < '85' THEN 'Fail'
+END "Final Grade"
+FROM  student s INNER JOIN enrollment e ON(s.student_id = e.student_id)
+JOIN grade g ON(e.section_id = g.section_id) AND (e.student_id = g.student_id)
+WHERE e.section_id = '87'
+ORDER BY s.last_name, s.first_name;

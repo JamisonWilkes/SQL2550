@@ -1,0 +1,98 @@
+﻿--Jamison Wilkes
+--SQL Assignment #8 
+
+
+--#1 Write a statement that displays the first and last name of the students that were the first to register for classes.
+SELECT first_name, last_name 
+FROM student 
+WHERE registration_date = 
+(SELECT MIN(registration_date) FROM student)
+ORDER BY last_name;
+
+
+
+
+--#2 Show the description, section number capacity and cost of the sections with the lowest course cost and a capacity equal 
+--to or above the average capacity. (2 separate sub queries needed.)
+SELECT c.description, sec.section_no,  c.cost, sec.capacity
+FROM course c INNER JOIN section sec ON c.course_no = sec.course_no
+WHERE c.cost = (SELECT MIN(cost) FROM course)
+AND sec.capacity >= (SELECT AVG(capacity) FROM section)
+ORDER BY section_no;
+
+
+--#3 Select the course number and total capacity for each course. Show only those courses with a total capacity less than 
+--the average capacity of all sections.
+SELECT c.course_no, SUM(s.capacity) AS TotalCapacity
+FROM course c INNER JOIN section s ON c.course_no = s.course_no
+GROUP BY c.course_no
+HAVING SUM(s.capacity) < (SELECT AVG(capacity) FROM section);
+
+
+--#4 Choose most ambitious students by showing the student ID for those students enrolled in the
+--most sections. Arrange the list by student ID.
+SELECT student_id, COUNT(*) AS MOST_CLASSES
+FROM enrollment
+GROUP BY student_id 
+HAVING COUNT(*) = (SELECT MAX(COUNT(*))  FROM enrollment GROUP BY student_id);
+
+
+--#5 Show the course number, description and cost of only the cheapest courses. Arrange the list by
+--course number then description.
+SELECT course_no, description, cost
+FROM course
+WHERE cost IN(SELECT MIN(cost) FROM course);
+
+
+--#6 (Use an Inline View) For course 120 determine the actual and potential revenue. The actual revenue is based on the number
+--of enrollments * cost and the potential revenue is based on the total capacity allowed for the course * cost. 
+--Then determine the difference between the potential and actual revenue.
+SELECT enrolled.num_enrolled Enrollments, enrolled.num_enrolled * c.cost Actual_Revenue, 
+capacity.capacity Total_Capacity, capacity.capacity * c.cost Potential_Revenue ,
+(capacity.capacity * c.cost) - (enrolled.num_enrolled * c.cost) Difference
+FROM (SELECT COUNT(*) num_enrolled FROM enrollment e JOIN section s ON e.section_id = s.section_id 
+WHERE s.course_no = 120) enrolled, (SELECT SUM(capacity) capacity FROM section WHERE course_no = 120) capacity, 
+course c WHERE c.course_no = 120;
+
+
+--#7 Using the INTERSECT operator, determine the student ID of students who have enrolled in any class.
+SELECT student_id
+FROM student
+INTERSECT
+SELECT student_id 
+FROM enrollment;
+
+
+--#8 Using the MINUS operator determine the instructor IDs of those who have never taught a course.
+SELECT instructor_id 
+FROM instructor
+MINUS
+SELECT instructor_id
+FROM section;
+
+
+--#9 (Decide if it is UNION or UNION ALL) Create a query that shows all of the individual grades for student ID 139 in 
+--section 95 and also the average of those grades. The individual grades should come first with the average at the bottom.
+--List the grade type code and numeric grade. The average row should have a caption of, "Average for student 139 is".
+SELECT grade_type_code, numeric_grade
+FROM grade
+WHERE student_id = 139
+AND section_id= 95
+UNION ALL
+SELECT 'Average for Student 112', ROUND(AVG(NUMERIC_GRADE), 2)
+FROM grade
+WHERE student_id = 139
+AND section_id = 95
+ORDER BY grade_type_code DESC;
+
+
+--#10 (UNION) Provide a list of names and cities of students and instructors that live in zip code 10025. Identify each
+--person's role as either "Student" or "Instructor". Sort the list by role, last name and first name.
+(SELECT s.first_name AS "First Name", s.last_name AS "Last Name", z.city, 'Student' AS ROLE
+FROM student s INNER JOIN  zipcode z ON s.zip = z.zip
+WHERE s.zip = z.zip AND z.zip = 10025)
+UNION
+(SELECT i.first_name AS "First Name", z.city, i.last_name as "Last Name", 'Instructor' AS ROLE 
+FROM instructor i INNER JOIN zipcode z ON i.zip = z.zip
+WHERE i.zip = z.zip AND z.zip = 10025)
+ORDER BY ROLE, "Last Name", "First Name";

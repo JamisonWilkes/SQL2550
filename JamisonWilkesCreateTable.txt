@@ -1,0 +1,420 @@
+﻿-- JamisonWilkesCreateTable
+
+
+
+
+CREATE TABLE CustomerType 
+(CustomerTypeID VARCHAR2(10) PRIMARY KEY,
+CustomerDescription VARCHAR2(50) NOT NULL);
+
+
+--New Shipper Table
+CREATE TABLE Shipper
+(ShipperID VARCHAR2(10) PRIMARY KEY,
+ShippingCompanyName VARCHAR2(50),
+ShippersPhone NUMBER(10));
+
+
+--New Employee Table
+CREATE TABLE Employee
+(EmployeeID VARCHAR2(10) PRIMARY KEY,
+EmpLastName VARCHAR2(50) NOT NULL,
+EmpFirstName VARCHAR(50) NOT NULL,
+EmpTitle VARCHAR(50) NOT NULL,
+EmpBirthDate DATE,
+EmpHireDate DATE, 
+EmpAddress VARCHAR2(50) NOT NULL,
+EmpCity VARCHAR2(20) NOT NULL,
+EmpRegion VARCHAR2(2) NOT NULL,
+EmpPostalCode VARCHAR2(10) NOT NULL,
+EmpCountry VARCHAR2(20) NOT NULL,
+EmpHomePhone NUMBER(10) NOT NULL,
+EmpExtension NUMBER(10) NOT NULL,
+EmpSalary NUMBER(10) NOT NULL);
+
+
+
+
+--Customer Table
+CREATE TABLE Customer 
+(CustomerNumber VARCHAR2(10) PRIMARY KEY,
+CompanyName VARCHAR2(50) NULL,
+ContactFirstName VARCHAR2(20) NOT NULL,
+ContactName VARCHAR2(20) NOT NULL,
+ContactTitle VARCHAR2(20) NULL,
+Address VARCHAR2(50) NOT NULL,
+City VARCHAR2(20) NOT NULL,
+Region VARCHAR2(2) NOT NULL,
+PostalCode VARCHAR2(10) NOT NULL,
+Country VARCHAR2(10) NOT NULL,
+Phone NUMBER(10) NOT NULL,
+Fax NUMBER(10) NULL,
+CustomerTypeID VARCHAR2(10) NOT NULL REFERENCES CustomerType(CustomerTypeID));
+
+
+--New Table Supplier
+
+
+CREATE TABLE Supplier
+(SupplierID VARCHAR2(10) NOT NULL PRIMARY KEY,
+SupplierCompanyName VARCHAR2(50) NULL,
+SupplierContactFirstName VARCHAR2(20) NOT NULL,
+SupplierContactName VARCHAR2(20) NOT NULL,
+SupplierContactTitle VARCHAR2(20) NULL,
+SupplierAddress VARCHAR2(50) NOT NULL,
+SupplierCity VARCHAR2(20) NOT NULL,
+SupplierRegion VARCHAR2(10) NOT NULL,
+SupplierPostalCode NUMBER(10) NOT NULL,
+Country VARCHAR2(20) NOT NULL,
+Phone NUMBER(10) NOT NULL,
+Fax NUMBER(10) NULL,
+SupplierHomePage VARCHAR2(50));
+
+
+--New Product Table 
+
+
+CREATE TABLE Product
+(ProductID VARCHAR2(10) NOT NULL PRIMARY KEY,
+ProductName VARCHAR2(50) NOT NULL,
+SupplierID VARCHAR2(10) NOT NULL REFERENCES Supplier(SupplierID),
+UnitPrice NUMBER(10,2) NOT NULL,
+ProductUnitPrice NUMBER(10,2) NOT NULL,
+ProductUnitsInStock NUMBER(10) NULL);
+
+
+
+
+--New order table
+CREATE TABLE order1
+(OrderNumber VARCHAR2(10) PRIMARY KEY,
+OrderDate DATE NOT NULL,
+CustomerNumber VARCHAR2(10) REFERENCES Customer1(CustomerNumber),
+EmployeeID VARCHAR2(10) REFERENCES Employee1(EmployeeID),
+ShipperID VARCHAR2(10) REFERENCES Shipper(ShipperID),
+ShippingCost NUMBER(10,2) NOT NULL,
+ShipToFirstName VARCHAR2(20) NOT NULL,
+ShipToLastName VARCHAR2(20) NOT NULL,
+ShipAddress VARCHAR2(50) NOT NULL,
+ShipCity VARCHAR2(20) NOT NULL,
+ShipRegion VARCHAR2(2) NOT NULL,
+ShipPostalCode NUMBER(10) NOT NULL,
+ShipCountry VARCHAR(20) NOT NULL);
+
+
+
+
+-- Order Quantity Table
+CREATE TABLE OrdQuantity
+(OrderNumber VARCHAR2(10) PRIMARY KEY REFERENCES order1(OrderNumber),
+ProductID VARCHAR2(10) REFERENCES Product1(ProductID),
+Quantity NUMBER(10) NOT NULL);
+
+
+
+
+
+
+
+
+INSERT INTO CustomerType
+(CustomerTypeID, CustomerDescription)
+VALUES
+('MedCo', 'Medium Sized Company');
+
+
+INSERT INTO CustomerType
+(CustomerTypeID, CustomerDescription)
+VALUES
+('Cust', 'Single Customer');
+
+
+INSERT INTO CustomerType
+(CustomerTypeID, CustomerDescription)
+VALUES
+('Corp', 'Corporation');
+
+
+INSERT INTO CustomerType
+(CustomerTypeID, CustomerDescription)
+VALUES
+('SmallCo', 'Small Sized Company');
+
+
+
+
+INSERT INTO Shipper
+(ShipperID, ShippingCompanyName, ShippersPhone)
+VALUES
+('FE', 'FedEx', 2458547855);
+
+
+INSERT INTO Shipper
+(ShipperID, ShippingCompanyName, ShippersPhone)
+VALUES
+('DHL', 'DHLGlobal', 3169876935);
+
+
+INSERT INTO Shipper
+(ShipperID, ShippingCompanyName, ShippersPhone)
+VALUES
+('USPS', 'US Postal Service', 8006953000);
+
+
+INSERT INTO Shipper
+(ShipperID, ShippingCompanyName, ShippersPhone)
+VALUES
+('UPS', 'United Parcel Service', 3659872222);
+
+
+
+
+
+
+
+
+
+
+INSERT INTO Employee
+(EmployeeID, EmpLastName, EmpFirstName, EmpTitle, EmpBirthDate, EmpHireDate, EmpAddress, EmpCity, EmpRegion, 
+EmpPostalCode, EmpCountry, EmpHomePhone, EmpExtension, EmpSalary)
+VALUES
+('65896321', 'Johnson', 'Eric', 'Jr Sales Associate', '28-Mar-89', '25-May-12', '258 East Lavenia Street', 'Denver', 
+'CO', '80125', 'USA', '7806333342', '7021', '33021');
+
+
+INSERT INTO Employee
+(EmployeeID, EmpLastName, EmpFirstName, EmpTitle, EmpBirthDate, EmpHireDate, EmpAddress, EmpCity, EmpRegion, 
+EmpPostalCode, EmpCountry, EmpHomePhone, EmpExtension, EmpSalary)
+VALUES
+('65896320', 'Olsen', 'Lori', 'Jr Sales Associate', '31-Dec-60', '25-May-12', '4657 North Horsepark Dr', 'Colorado Springs', 
+'CO', '80222', 'USA', '7806337849', '7024', '36210');
+
+
+INSERT INTO Employee
+(EmployeeID, EmpLastName, EmpFirstName, EmpTitle, EmpBirthDate, EmpHireDate, EmpAddress, EmpCity, EmpRegion, 
+EmpPostalCode, EmpCountry, EmpHomePhone, EmpExtension, EmpSalary)
+VALUES
+('65896395', 'Zenger', 'Kimberly', 'Sr Sales Associate', '30-Apr-64', '6-Sep-88', '3456 View Linda Way', 'Littleton', 
+'CO', '80253', 'USA', '7806569800', '7001', '55600');
+
+
+INSERT INTO Employee
+(EmployeeID, EmpLastName, EmpFirstName, EmpTitle, EmpBirthDate, EmpHireDate, EmpAddress, EmpCity, EmpRegion, 
+EmpPostalCode, EmpCountry, EmpHomePhone, EmpExtension, EmpSalary)
+VALUES
+('65896328', 'Jensen', 'Beth', 'Jr Sales Associate', '28-May-62', '2-Dec-95', '1256 North Main', 'Star Valley', 
+'WY', '81265', 'USA', '7075689865', '7026', '42012');
+
+
+INSERT INTO Employee
+(EmployeeID, EmpLastName, EmpFirstName, EmpTitle, EmpBirthDate, EmpHireDate, EmpAddress, EmpCity, EmpRegion, 
+EmpPostalCode, EmpCountry, EmpHomePhone, EmpExtension, EmpSalary)
+VALUES
+('65896333', 'Hunsaker', 'Lisa', 'Sr Sales Associate', '23-May-90', '1-Sep-2010', '456 East Trail Dr', 'Boulder', 
+'CO', '80224', 'USA', '7806343675', '7027', '54328');
+
+
+
+
+INSERT INTO Customer
+(CustomerNumber, CompanyName, ContactFirstName, ContactName, ContactTitle, Address, City, Region, PostalCode, Country, 
+Phone, Fax, CustomerTypeID)
+VALUES
+('236589', 'Jones Ultimate Systems', 'John', 'Henry', 'Salesman', '1259 East Fremont', 'Lincoln', 'NE', '65987', 'USA', 
+'2589863245', '2589863255','MedCo');
+
+
+INSERT INTO Customer
+(CustomerNumber, CompanyName, ContactFirstName, ContactName, ContactTitle, Address, City, Region, PostalCode, Country, 
+Phone, Fax, CustomerTypeID)
+VALUES
+('236596', NULL, 'Lee', 'Johnson', NULL, '4568 VanRiper Rd', 'Galvaston', 'TX', '54986', 'USA', 
+'7765680212', NULL, 'Cust');
+
+
+INSERT INTO Customer
+(CustomerNumber, CompanyName, ContactFirstName, ContactName, ContactTitle, Address, City, Region, PostalCode, Country, 
+Phone, Fax, CustomerTypeID)
+VALUES
+('236588', 'Utility Supplies', 'Susan', 'Gordon', 'Operations Mge', '2349 West Olsen Ave', 'Yuma', 'AZ', '94321', 'USA', 
+'7778539658', '7778539600', 'Corp');
+
+
+INSERT INTO Customer
+(CustomerNumber, CompanyName, ContactFirstName, ContactName, ContactTitle, Address, City, Region, PostalCode, Country, 
+Phone, Fax, CustomerTypeID)
+VALUES
+('236798', 'Western Systems', 'Megan', 'Hirschi', 'Receptionist', '1345 Savannah St', 'Salt Flat', 'WY', '81239', 'USA', 
+'8348734596', NULL, 'SmallCo');
+
+
+INSERT INTO Customer
+(CustomerNumber, CompanyName, ContactFirstName, ContactName, ContactTitle, Address, City, Region, PostalCode, Country, 
+Phone, Fax, CustomerTypeID)
+VALUES
+('236850', 'Bear County Inn', 'Rhonda', 'Ingram', 'Office Administrator', '846 East 7800 South', 'Salt Lake City', 'UT', 
+'84122', 'USA', '8018877643', NULL, 'SmallCo');
+
+
+
+
+INSERT INTO Supplier
+(SupplierID, SupplierCompanyName, SupplierContactFirstName, SupplierContactName, SupplierContactTitle, 
+SupplierAddress, SupplierCity, SupplierRegion, SupplierPostalCode, Country, Phone, Fax, SupplierHomePage)
+VALUES
+('1', 'Sleep Improvement Developers', 'Jessie', 'Jonas', 'Shipping Clerk', '12879 North Hwy 13', 'Honeyville', 'CA', '98635', 
+'USA', '9655222525', '9655222500', 'www.sleepdevelopers.com');
+
+
+INSERT INTO Supplier
+(SupplierID, SupplierCompanyName, SupplierContactFirstName, SupplierContactName, SupplierContactTitle, 
+SupplierAddress, SupplierCity, SupplierRegion, SupplierPostalCode, Country, Phone, Fax, SupplierHomePage)
+VALUES
+('2', 'Comfort Solutions', 'Nathan', 'Green', 'Manager', '258 East Liberty Street', 'Deweyton', 'NJ', '12569', 
+'USA', '2236533000', '2236533001', 'www.kingsizecomfort.com');
+
+
+INSERT INTO Supplier
+(SupplierID, SupplierCompanyName, SupplierContactFirstName, SupplierContactName, SupplierContactTitle, 
+SupplierAddress, SupplierCity, SupplierRegion, SupplierPostalCode, Country, Phone, Fax, SupplierHomePage)
+VALUES
+('3', 'WeedTimeProducts', 'Shellie', 'Jackson', 'Clerk', '689 West Star View Rd', 'Snowton', 'NM', '79632', 
+'USA', '7459620236', '7459620262', 'www.weedtimeprod.com');
+
+
+
+
+
+
+INSERT INTO Product
+(ProductID, ProductName, SupplierID, UnitPrice, ProductUnitPrice, ProductUnitsInStock)
+VALUES
+('1254788', 'Miracle Sleep Pillow', '1', '32.99', '25.99', '23');
+
+
+INSERT INTO Product
+(ProductID, ProductName, SupplierID, UnitPrice, ProductUnitPrice, ProductUnitsInStock)
+VALUES
+('2102986', 'King Size Comforter', '2', '99.95', '66.55', '15');
+
+
+INSERT INTO Product
+(ProductID, ProductName, SupplierID, UnitPrice, ProductUnitPrice, ProductUnitsInStock)
+VALUES
+('1245678', 'Super Comforter', '1', '64.99', '55.99', '23');
+
+
+INSERT INTO Product
+(ProductID, ProductName, SupplierID, UnitPrice, ProductUnitPrice, ProductUnitsInStock)
+VALUES
+('1010233', 'MegaStar Weed Tamer', '3', '35.22', '22.99', '8');
+
+
+INSERT INTO Product
+(ProductID, ProductName, SupplierID, UnitPrice, ProductUnitPrice, ProductUnitsInStock)
+VALUES
+('1900912', 'Infant Sheet Protector', '2', '17.99', '12.99', '20');
+
+
+
+
+
+
+
+
+INSERT INTO order1
+(OrderNumber, OrderDate, CustomerNumber, EmployeeID, ShipperID, ShippingCost, ShipToFirstName, ShipToLastName, ShipAddress,
+ShipCity, ShipRegion, ShipPostalCode, ShipCountry)
+VALUES
+('125658', '23-Nov-13', '236589', '65896321', 'FE', '6.99', 'John', 'Henry', '1259 East Fremont', 'Lincoln', 'NE', '65987', 'USA');
+
+
+INSERT INTO order1
+(OrderNumber, OrderDate, CustomerNumber, EmployeeID, ShipperID, ShippingCost, ShipToFirstName, ShipToLastName, ShipAddress,
+ShipCity, ShipRegion, ShipPostalCode, ShipCountry)
+VALUES
+('125661', '28-Nov-13', '236589', '65896320', 'DHL', '7.5', 'Jeff', 'Jonas', '768 South 4th St', 'Yuma', 'AZ', '89652', 'USA');
+
+
+INSERT INTO order1
+(OrderNumber, OrderDate, CustomerNumber, EmployeeID, ShipperID, ShippingCost, ShipToFirstName, ShipToLastName, ShipAddress,
+ShipCity, ShipRegion, ShipPostalCode, ShipCountry)
+VALUES
+('125659', '24-Nov-13', '236596', '65896395', 'USPS', '12.99', 'Jack', 'Seamons', '23598 North Main', 'Chino', 'WA', '96895', 'USA');
+
+
+INSERT INTO order1
+(OrderNumber, OrderDate, CustomerNumber, EmployeeID, ShipperID, ShippingCost, ShipToFirstName, ShipToLastName, ShipAddress,
+ShipCity, ShipRegion, ShipPostalCode, ShipCountry)
+VALUES
+('125660', '25-Nov-13', '236588', '65896328', 'FE', '8.25', 'Johnathan', 'Seamons', '635 North Second Ave', 'Chicago', 'IL', 
+'65986', 'USA');
+
+
+INSERT INTO order1
+(OrderNumber, OrderDate, CustomerNumber, EmployeeID, ShipperID, ShippingCost, ShipToFirstName, ShipToLastName, ShipAddress,
+ShipCity, ShipRegion, ShipPostalCode, ShipCountry)
+VALUES
+('125662', '29-Nov-13', '236798', '65896333', 'USPS', '4.96', 'Megan', 'Hirschi', '1345 Savannah St', 'Salt Flat', 'WY', 
+'81239', 'USA');
+
+
+INSERT INTO order1
+(OrderNumber, OrderDate, CustomerNumber, EmployeeID, ShipperID, ShippingCost, ShipToFirstName, ShipToLastName, ShipAddress,
+ShipCity, ShipRegion, ShipPostalCode, ShipCountry)
+VALUES
+('125663', '30-Nov-13', '236850', '65896395', 'UPS', '7.55', 'Rhonda', 'Ingram', '846 East 7800 South', 'Salt Lake City', 
+'UT', '84122', 'USA');
+
+
+
+
+
+
+INSERT INTO OrdQuantity
+(OrderNumber, ProductID, Quantity)
+VALUES
+('125658', '1254788', '20');
+
+
+INSERT INTO OrdQuantity
+(OrderNumber, ProductID, Quantity)
+VALUES
+('125658', '2102986', '12');
+
+
+INSERT INTO OrdQuantity
+(OrderNumber, ProductID, Quantity)
+VALUES
+('125661', '1245678', '10');
+
+
+INSERT INTO OrdQuantity
+(OrderNumber, ProductID, Quantity)
+VALUES
+('125659', '1010233', '1');
+
+
+INSERT INTO OrdQuantity
+(OrderNumber, ProductID, Quantity)
+VALUES
+('125660', '1254788', '4');
+
+
+INSERT INTO OrdQuantity
+(OrderNumber, ProductID, Quantity)
+VALUES
+('125662', '1900912', '2');
+
+
+INSERT INTO OrdQuantity
+(OrderNumber, ProductID, Quantity)
+VALUES
+('125663', '2102986', '4');
+
+
+INSERT INTO OrdQuantity
+(OrderNumber, ProductID, Quantity)
+VALUES
+('125663', '1010233', '1');

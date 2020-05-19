@@ -1,0 +1,102 @@
+﻿--Jamison Wilkes
+--Assignment 5 Aggregate Functions
+
+
+--#1 (Works)Create a query that returns the average cost for all courses. (Round to two places).
+
+
+SELECT ROUND(AVG(cost),2)
+FROM course;
+
+
+--#2 (Works)Create a query that returns the total number of Students that registered during February 2007.
+--Alias the column as "February_Registrations".
+
+
+SELECT COUNT(student_id) February_Registrations
+FROM student 
+WHERE TO_CHAR(registration_date, 'MM-YYYY') = '02-2007';
+
+
+--#3 (Works)Create a query that returns the average, highest and lowest final exam scores for Section 141.
+
+
+SELECT AVG(numeric_grade), MAX(numeric_grade), MIN(numeric_grade)
+FROM grade 
+WHERE grade_type_code = 'FI' AND section_id = '141';
+
+
+--#4 (WORKS)List the city, state and number of zip codes for all cities with more than three zip codes.  
+--Arrange by number_of_zipcodes then city with both in descending order.
+
+
+SELECT  city, state, COUNT(zip)
+FROM zipcode
+GROUP BY city, state
+HAVING COUNT(zip) >3
+ORDER BY COUNT(zip) DESC, city DESC;
+
+
+--#5 (Works)Provide a list of Sections and the number of students enrolled in each section for students who enrolled on 02/21/2007. 
+--Sort from highest to lowest on the number of students enrolled then section_id.
+SELECT section_id, COUNT(student_id) enrolled
+FROM enrollment
+WHERE TO_CHAR(enroll_date, 'MM/DD/YYYY') = '02/21/2007'
+GROUP BY section_id
+ORDER BY COUNT(student_id) DESC, section_id;
+
+
+--#6 (WORKs needs to be formatted) Create a query listing the student ID, Section ID and Average Grade for all students in Section 147.
+
+
+SELECT DISTINCT student_id, section_id, TO_CHAR(ROUND(AVG(numeric_grade),4),’99.9999’) AS AvgGrade
+FROM grade
+WHERE section_id = '147'
+GROUP BY student_id, section_id;
+
+
+--#7(Works) Create a query to determine the number of sections in which student ID 214, 215, 232 and 238 are enrolled. Your
+--output should contain the student ID and the number of sections enrolled. Arrange the list by student ID
+SELECT student_id, COUNT(section_id)
+FROM enrollment
+WHERE student_id = '214' OR student_id = '215' or student_id = '232' OR student_id = '238'
+GROUP BY student_id;
+
+
+--#8 (Doesn't Work) List the section ID and the lowest score for quizzes where the lowest score for the section on a quiz in that 
+--section was greater than 80. Arrange by section id.
+
+
+SELECT s.section_id, MIN(g.numeric_grade)
+FROM student s JOIN enrollment e ON s.student_id = e.student_id
+JOIN grade g ON e.student_id = g.student_id AND e.section_id = g.section_id
+WHERE g.grade_type_code = 'QZ' 
+group by s.section_id;
+
+
+--#9(Works) List the names of Employers having 6 or more student employees.  Your output should contain the employer name and the 
+--number of student employees.  Arrange the output on the number of employees from highest to lowest.
+
+
+SELECT
+    employer "EMPLOYER",
+    COUNT(*) "Employees"
+FROM
+    student
+GROUP BY
+   employer
+HAVING
+    COUNT(*) >= 6
+ORDER BY "Employees" DESC;
+
+
+--#10 (works) Provide an alphabetic list of students (student last name followed by first name) who have an overall grade average of 
+--91 or higher. The name should be one column, last name first name and sorted on last name then first name.
+
+
+SELECT s.last_name ||','|| s.first_name AS "Student_Name", ROUND(AVG(g.numeric_grade),1) AS "Average Grade"
+FROM student s INNER JOIN enrollment e ON(s.student_id = e.student_id)
+INNER JOIN grade g ON(e.student_id = g.student_id) AND (e.section_id = g.section_id)
+GROUP BY s.last_name, s.first_name, ROUND(AVG(g.numeric_grade),1)
+HAVING ROUND(AVG(g.numeric_grade)) >= 91
+GROUP BY s.last_name, s.first_name;

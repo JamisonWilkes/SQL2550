@@ -1,0 +1,227 @@
+﻿--JAMISON WILKES SUBQUERIES 6-7
+
+
+--#1 Show the instructor ID, Instructor first name, last name and number of students enrolled in classes for those instructors
+--who have at least 25 students enrolled. Arrange the list by highest number enrolled to lowest
+
+
+SELECT i.instructor_id, i.first_name, i.last_name, COUNT(*) AS NUM_Students
+FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+INNER JOIN section sec ON e.section_id = sec.section_id
+INNER JOIN instructor i ON i.instructor_id = sec.instructor_id
+GROUP BY i.instructor_id, i.first_name, i.last_name
+HAVING COUNT(*) >=25
+ORDER BY NUM_Students DESC;
+
+
+--#2   Show the student first and last names, the grade type code and the average numeric grade of the homework for those
+--students in sections between ID 110 and 125. Arrange the list by descending average numeric grade then last name and first name.
+
+
+SELECT s.first_name, s.last_name, g.grade_type_code, AVG(g.numeric_grade)
+FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+INNER JOIN grade g ON e.student_id = g.student_id AND e.section_id = g.section_id
+WHERE g.section_id BETWEEN '110'AND '125' AND g.grade_type_code LIKE 'HM'
+GROUP BY s.first_name, s.last_name, g.grade_type_code
+HAVING AVG(g.numeric_grade) > 80
+ORDER BY AVG(g.numeric_grade) DESC, last_name, first_name;
+
+
+--#3  Show the city, state and zip code and the number of instructors per zip code. Show only those zip codes that have more 
+--than one instructor per zip code. Arrange the list by number of instructors descending.
+SELECT z.city, z.state, z.zip, COUNT(*) AS Num_instructors
+FROM zipcode z INNER JOIN instructor i ON i.zip = z.zip
+GROUP BY z.city, z.state, z.zip
+HAVING COUNT(*) >1
+ORDER BY Num_instructors desc;
+
+
+--#4 Show the Grade Type descriptions and the number of grades per description. Arrange the list by highest number of grades 
+--to lowest number.
+
+
+SELECT gt.description, COUNT(*) AS NumGrades
+FROM grade_type gt INNER JOIN grade_type_weight gtw ON gtw.grade_type_code = gt.grade_type_code
+INNER JOIN grade g ON g.grade_type_code = gtw.grade_type_code AND gtw.section_id = g.section_id
+GROUP BY gt.description
+ORDER BY NumGrades DESC;
+
+
+--#5 Show the student first and last names, the grade types and the number of assignments for each grade type. Show only those 
+--students who have more than 10 assignments per grade type. Sort the list by first name then last name of the student.
+
+
+SELECT s.first_name, s.last_name, g.grade_type_code, COUNT(*)
+FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+INNER JOIN grade g ON e.student_id = g.student_id AND e.section_id = g.section_id
+GROUP BY s.first_name, s.last_name, g.grade_type_code
+HAVING COUNT(*) > 10
+ORDER BY s.first_name, s.last_name;
+
+
+--#6 Provide the student_id and name of the student that scored highest on the final exam (FI) in course 230 section_id 99.
+SELECT s.student_id, s.last_name, s.first_name 
+FROM student s JOIN enrollment e ON s.student_id = e.student_id
+JOIN grade g ON e.section_id = g.section_id AND e.student_id = g.student_id
+JOIN section se ON se.section_id = e.section_id
+WHERE e.section_id = 99
+AND se.course_no = 230
+AND grade_type_code = 'FI'
+AND numeric_grade = 
+    (SELECT MAX(numeric_grade)
+    FROM grade g INNER JOIN enrollment e ON g.section_id = e.section_id AND g.student_id = e.student_id 
+    WHERE e.section_id = 99
+    AND se.course_no = 230
+    AND grade_type_code = 'FI'
+    GROUP BY s.student_id, s.last_name, s.first_name)
+ORDER BY student_id;
+
+
+--#7 Provide an alphabetic listing of instructors who have never taught a course section. List the salutation, first name, 
+--last name and zip code.
+SELECT salutation, first_name, last_name, zip 
+FROM instructor
+WHERE instructor_id NOT IN
+    (SELECT instructor_id
+    FROM section 
+    GROUP BY instructor_id);
+
+
+--#8 Generate an alphabetic listing containing the last names and final exam grade (FI) of students who scored above 
+--average on the final exam for section 90.
+SELECT s.last_name, numeric_grade
+FROM student s JOIN enrollment e ON s.student_id = e.student_id
+INNER JOIN grade g ON e.student_id = g.student_id and e.section_id = g.section_id
+WHERE grade_type_code = 'FI'
+AND e.section_id = 90
+AND numeric_grade >
+    (SELECT AVG(numeric_grade) FROM grade WHERE section_id = 90 AND grade_type_code = 'FI')
+ORDER BY s.last_name, s.first_name;
+
+
+--#9 List the course number and course description of the courses with the lowest number of enrolled students. 
+--Arrange the list on course number.
+
+
+SELECT c.course_no, c.description
+FROM course c JOIN section s ON c.course_no = s.course_no
+INNER JOIN enrollment e ON s.section_id = e.section_id
+GROUP BY c.course_no, c.description
+HAVING COUNT(*) =
+    (SELECT MIN(COUNT(*)) AS enrolled 
+    FROM course c INNER JOIN section s ON c.course_no = s.course_no
+    INNER JOIN enrollment e ON s.section_id = e.section_id
+    GROUP BY c.course_no)
+ORDER BY c.course_no;
+
+
+--#10 Provide an alphabetic list containing the full names and phone numbers of students who have taken both the 
+--Systems Analysis and the Project Management courses. You must use the title of the course in your query, not the course number.
+
+
+SELECT DISTINCT s.first_name, s.last_name, s.phone
+FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+WHERE s.student_id IN
+    (SELECT s.student_id FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+    WHERE c.description = 'Systems Analysis')
+AND s.student_id IN
+    (SELECT s.student_id FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+    WHERE c.description = 'Project Management')
+ORDER BY last_name;
+
+
+--#11 List the names of instructors who have not used participation (PA) as a basis for grading in their courses. Arrange by last name.
+SELECT last_name, first_name FROM instructor 
+WHERE instructor_id NOT IN
+    (SELECT i.instructor_id FROM instructor i INNER JOIN section s ON i.instructor_id = s.instructor_id 
+    INNER JOIN grade_type_weight w ON s.section_id = w.section_id
+    WHERE w.grade_type_code = 'PA')
+ORDER BY last_name;
+
+
+--#12 List the first and last names of students that are in trouble of failing section 87 because they received a score 
+--on the final exam that was below the average of the rest of the class for that final exam. Order the list by last name.
+SELECT s.first_name, s.last_name FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+INNER JOIN grade g ON e.student_id = g.student_id AND e.section_id = g.section_id
+WHERE e.section_id = '87' AND g.grade_type_code = 'FI'
+AND g.numeric_grade < 
+    (SELECT AVG(numeric_grade) FROM grade WHERE grade_type_code = 'FI' AND section_id = '87');
+
+
+--#13 List the course number and course description of the courses with the highest number of enrolled students. 
+--Arrange the list on course description.
+
+
+SELECT c.course_no, c.description
+FROM course c JOIN section s ON c.course_no = s.course_no
+INNER JOIN enrollment e ON s.section_id = e.section_id
+GROUP BY c.course_no, c.description
+HAVING COUNT(*) =
+    (SELECT MAX(COUNT(*)) AS enrolled 
+    FROM course c INNER JOIN section s ON c.course_no = s.course_no
+    INNER JOIN enrollment e ON s.section_id = e.section_id
+    GROUP BY c.course_no)
+ORDER BY c.course_no;
+
+
+--#14 Provide the student_id, name and final exam grade of the student(s) that received the lowest score on the final exam (FI) 
+--in section 81.
+SELECT s.student_id, s.first_name, s.last_name, g.numeric_grade 
+FROM student s JOIN enrollment e ON s.student_id = e.student_id
+JOIN grade g ON e.section_id = g.section_id AND e.student_id = g.student_id
+JOIN section se ON se.section_id = e.section_id
+WHERE e.section_id = '81'
+AND grade_type_code = 'FI'
+AND numeric_grade = 
+    (SELECT MIN(numeric_grade)
+    FROM grade g INNER JOIN enrollment e ON g.section_id = e.section_id AND g.student_id = e.student_id 
+    WHERE e.section_id = '81'
+    AND grade_type_code = 'FI'
+    GROUP BY s.student_id, s.last_name, s.first_name)
+ORDER BY student_id;
+
+
+--#15 Provide an alphabetic list containing the full names of students (order by last name) and phone number who are the smartest
+--students because they have taken at least one of the database courses. (Intro to SQL, Oracle Tools, PL/SQL Programming, 
+--Database Design, Database System Principles, DB Programming with Java). Your query must call the class by the description.
+SELECT DISTINCT s.first_name, s.last_name, s.phone
+FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+WHERE s.student_id IN
+    (SELECT s.student_id FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+    WHERE c.description = 'Intro to SQL')
+OR s.student_id IN
+    (SELECT s.student_id FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+    WHERE c.description = 'Oracle Tools')
+OR s.student_id IN
+    (SELECT s.student_id FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+    WHERE c.description = 'PL/SQL Programming')
+OR s.student_id IN
+    (SELECT s.student_id FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+    WHERE c.description = 'Database Design')
+OR s.student_id IN
+    (SELECT s.student_id FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+    WHERE c.description = 'Database System Principles')
+OR s.student_id IN
+    (SELECT s.student_id FROM student s INNER JOIN enrollment e ON s.student_id = e.student_id
+    INNER JOIN section sec ON e.section_id = sec.section_id
+    INNER JOIN course c ON sec.course_no = c.course_no
+    WHERE c.description = 'DB Programming with Java')
+ORDER BY last_name;
